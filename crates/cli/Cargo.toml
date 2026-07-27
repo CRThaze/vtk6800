@@ -1,0 +1,20 @@
+[package]
+name = "vtk6800-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Command-line frontend for configuring the Vortex VTK-6800 keyboard"
+
+[[bin]]
+name = "vtk6800"
+path = "src/main.rs"
+
+[dependencies]
+vtk6800-core.workspace = true
+vtk6800-config.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+dialoguer.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true

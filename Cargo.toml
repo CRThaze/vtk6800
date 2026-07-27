@@ -1,0 +1,31 @@
+[workspace]
+resolver = "2"
+members = ["crates/core", "crates/config", "crates/cli"]
+
+[workspace.package]
+version = "0.0.1"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/CRThaze/vtk6800"
+description = "Configuration tool for the Vortex KBtRE66/KBtRE68/PC66/PC68 (VTK-6800) mechanical keyboard"
+
+[workspace.dependencies]
+vtk6800-core = { path = "crates/core" }
+vtk6800-config = { path = "crates/config" }
+# pure-Rust hidraw backend (basic-udev sysfs enum): no libudev/libusb system deps.
+hidapi = { version = "2", default-features = false, features = ["linux-native-basic-udev"] }
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+serde_yaml = "0.9"
+thiserror = "2"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+dialoguer = "0.11"
+directories = "5"
+crossterm = "0.28"
+
+[profile.release]
+lto = "thin"
+strip = true

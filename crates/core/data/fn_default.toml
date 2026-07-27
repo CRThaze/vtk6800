@@ -1,0 +1,275 @@
+# PC68 / VTK-6800: Fn-layer default (documented factory).
+# Transcribed from Vortex PC66/PC68 manual; media codes cross-validated
+# against the decompiled consumer table (see PROTOCOL.md §5). Slots match
+# base_layer_default.toml. Unlisted slots pass through to base.
+#
+# class: key=standard HID | consumer=media(entry type 0x03) | firmware=hardwired
+# (device/OS combos are NOT writable keymap entries; listed for completeness).
+
+[meta]
+model = "PC68 / VTK-6800 (hfd.cn HFD801)"
+layer = "fn"
+write_command = 0x27   # 04 27 09 : program Fn keymap (see PROTOCOL.md)
+source = "Vortex PC66/PC68 manual (documented); media codes Ghidra-validated"
+generated = "2026-07-16"
+entry_count = 37
+
+[[key]]
+slot = 1
+base = "esc"
+fn_action = "grave `"
+class = "key"
+code = 0x35
+
+[[key]]
+slot = 20
+base = "1"
+fn_action = "F1"
+class = "key"
+code = 0x3A
+
+[[key]]
+slot = 21
+base = "2"
+fn_action = "F2"
+class = "key"
+code = 0x3B
+
+[[key]]
+slot = 22
+base = "3"
+fn_action = "F3"
+class = "key"
+code = 0x3C
+
+[[key]]
+slot = 23
+base = "4"
+fn_action = "F4"
+class = "key"
+code = 0x3D
+
+[[key]]
+slot = 24
+base = "5"
+fn_action = "F5"
+class = "key"
+code = 0x3E
+
+[[key]]
+slot = 25
+base = "6"
+fn_action = "F6"
+class = "key"
+code = 0x3F
+
+[[key]]
+slot = 26
+base = "7"
+fn_action = "F7"
+class = "key"
+code = 0x40
+
+[[key]]
+slot = 27
+base = "8"
+fn_action = "F8"
+class = "key"
+code = 0x41
+
+[[key]]
+slot = 28
+base = "9"
+fn_action = "F9"
+class = "key"
+code = 0x42
+
+[[key]]
+slot = 29
+base = "0"
+fn_action = "F10"
+class = "key"
+code = 0x43
+
+[[key]]
+slot = 30
+base = "-"
+fn_action = "F11"
+class = "key"
+code = 0x44
+
+[[key]]
+slot = 31
+base = "="
+fn_action = "F12"
+class = "key"
+code = 0x45
+
+[[key]]
+slot = 103
+base = "backspace"
+fn_action = "Delete"
+class = "key"
+code = 0x4C
+
+[[key]]
+slot = 47
+base = "P"
+fn_action = "PrintScreen"
+class = "key"
+code = 0x46
+
+[[key]]
+slot = 48
+base = "["
+fn_action = "ScrollLock"
+class = "key"
+code = 0x47
+
+[[key]]
+slot = 49
+base = "]"
+fn_action = "Pause"
+class = "key"
+code = 0x48
+
+[[key]]
+slot = 65
+base = ";"
+fn_action = "Insert"
+class = "key"
+code = 0x49
+
+[[key]]
+slot = 45
+base = "I"
+fn_action = "Up"
+class = "key"
+code = 0x52
+
+[[key]]
+slot = 62
+base = "J"
+fn_action = "Left"
+class = "key"
+code = 0x50
+
+[[key]]
+slot = 63
+base = "K"
+fn_action = "Down"
+class = "key"
+code = 0x51
+
+[[key]]
+slot = 64
+base = "L"
+fn_action = "Right"
+class = "key"
+code = 0x4F
+
+[[key]]
+slot = 56
+base = "A"
+fn_action = "Prev Track"
+class = "consumer"
+code = 0xB6
+
+[[key]]
+slot = 57
+base = "S"
+fn_action = "Play/Pause"
+class = "consumer"
+code = 0xCD
+
+[[key]]
+slot = 58
+base = "D"
+fn_action = "Next Track"
+class = "consumer"
+code = 0xB5
+
+[[key]]
+slot = 59
+base = "F"
+fn_action = "Mute"
+class = "consumer"
+code = 0xE2
+
+[[key]]
+slot = 60
+base = "G"
+fn_action = "Volume Down"
+class = "consumer"
+code = 0xEA
+
+[[key]]
+slot = 61
+base = "H"
+fn_action = "Volume Up"
+class = "consumer"
+code = 0xE9
+
+[[key]]
+slot = 94
+base = "space"
+fn_action = "CapsLock"
+class = "key"
+code = 0x39
+
+# FIRMWARE-RESERVED ON THE FN LAYER (hardware-verified 2026-07-27):
+# The wireless module (HFD801) hardwires the arrow keys, the right-edge column,
+# and the bottom-LEFT modifier cluster to its radio / OS-switch functions (BT
+# device switch 1/2/3, 2.4G, pairing, USB<->wireless toggle, battery). Note this
+# is not one contiguous block: it is the arrow+right-edge cluster PLUS the
+# bottom-left mods. The firmware intercepts these
+# Fn combos BEFORE consulting the Fn keymap, so any value flashed here emits
+# NOTHING to USB. This was confirmed two ways: evtest shows no event for these
+# Fn combos, and the VENDOR's own Windows GUI also has no effect when remapping
+# them. An earlier note here claimed they were "fully user-remappable (verified
+# against a vendor GUI profile export)" -- that was WRONG: the GUI *accepts* the
+# assignment into the profile, but the hardware does not honor it at runtime.
+# Reserved slots and their canonical firmware function (per the official manuals
+# -- "Connection", "Fn Key Combos", and "RGB Light Setting" panels; RGB combos
+# need the RGB variant in wired mode). These carry no Fn keyboard output and MUST
+# NOT be treated as remappable -- pick another slot instead. Mirrored in
+# crates/core/src/reserved.rs.
+#   slot 117 Home     -> Bluetooth pairing mode (Fn+Home)
+#   slot 118 PgUp     -> Bluetooth device 1
+#   slot 121 PgDn     -> Bluetooth device 2
+#   slot 120 End      -> Bluetooth device 3
+#   slot 101 Up       -> RGB brightness up
+#   slot 100 Down     -> RGB brightness down
+#   slot 102 Right    -> RGB effect speed up
+#   slot 99  Left     -> RGB effect speed down
+#   slot 92  LWin     -> Win-lock (disable Win key)
+#   slot 91  LCtrl    -> switch RGB colour
+#   slot 93  LAlt     -> switch RGB lighting mode
+# Separately, held ~2-3s WITHOUT Fn (base-layer chords, not Fn entries): Alt_L/R +
+# PgUp/PgDn/End = Colemak/Dvorak/Qwerty, Alt_L/R + Home = OS switch, Alt_L+Alt_R =
+# factory reset. These are why the vendor tracks `keyboard_layout` as a hardware
+# combo (PROTOCOL.md 7d) rather than a wire command.
+#
+# The three keys below are in the MAIN cluster (Z, ., /), OUTSIDE the reserved
+# zone, so per the manual's Fn-combo box they are ordinary remappable outputs:
+# Fn+Z = Menu, Fn+. = Right Win, Fn+/ = Win (68-key).
+[[key]]
+slot = 74
+base = "Z"
+fn_action = "Menu"
+class = "key"
+code = 0x65
+
+[[key]]
+slot = 82
+base = ">"
+fn_action = "Right Win"
+class = "key"
+code = 0xe7
+
+[[key]]
+slot = 83
+base = "?"
+fn_action = "Win"
+class = "key"
+code = 0xe3

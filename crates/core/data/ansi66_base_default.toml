@@ -1,0 +1,348 @@
+# PC66/PC68 / KBt RE: ANSI 66-key base-layer default (factory). Derived: ANSI-68 minus slots 92 (Win/Code) & 98 (right Ctrl); verified from KBt RE 66 product photo.
+# Auto-generated from Vortex GUi KeyboardLayout.xml. Do not hand-edit;
+# re-run gen_base_layer.py. Fn-layer defaults live in fn_layer_default.toml.
+
+[meta]
+model = "PC66/PC68 / KBt RE (hfd.cn HFD801)"
+variant = "ANSI 66-key"
+#                           adds slot 110 (0x32) + slot 111 (0x64 non-US)
+layer = "base"
+write_command = 0x11   # 04 11 09 : program base keymap (see PROTOCOL.md)
+source = "KeyboardLayout.xml (Vortex GUi PC66 V1.6)"
+generated = "2026-07-16"
+key_count = 66
+
+# slot = hardware key_index (== light_index here). hid = USB HID usage id.
+# Default entry the tool emits per key: [0x02, 0x00, hid, 0x00] (standard key),
+# except the Fn key which is a layer-hold (entry type 0x05, hid 0xAF is an
+# internal marker, NOT a real HID usage).
+
+[[key]]
+slot = 1
+name = "esc"
+hid  = 0x29
+
+[[key]]
+slot = 20
+name = "1"
+hid  = 0x1E
+
+[[key]]
+slot = 21
+name = "2"
+hid  = 0x1F
+
+[[key]]
+slot = 22
+name = "3"
+hid  = 0x20
+
+[[key]]
+slot = 23
+name = "4"
+hid  = 0x21
+
+[[key]]
+slot = 24
+name = "5"
+hid  = 0x22
+
+[[key]]
+slot = 25
+name = "6"
+hid  = 0x23
+
+[[key]]
+slot = 26
+name = "7"
+hid  = 0x24
+
+[[key]]
+slot = 27
+name = "8"
+hid  = 0x25
+
+[[key]]
+slot = 28
+name = "9"
+hid  = 0x26
+
+[[key]]
+slot = 29
+name = "0"
+hid  = 0x27
+
+[[key]]
+slot = 30
+name = "-"
+hid  = 0x2D
+
+[[key]]
+slot = 31
+name = "="
+hid  = 0x2E
+
+[[key]]
+slot = 37
+name = "tab"
+hid  = 0x2B
+
+[[key]]
+slot = 38
+name = "Q"
+hid  = 0x14
+
+[[key]]
+slot = 39
+name = "W"
+hid  = 0x1A
+
+[[key]]
+slot = 40
+name = "E"
+hid  = 0x08
+
+[[key]]
+slot = 41
+name = "R"
+hid  = 0x15
+
+[[key]]
+slot = 42
+name = "T"
+hid  = 0x17
+
+[[key]]
+slot = 43
+name = "Y"
+hid  = 0x1C
+
+[[key]]
+slot = 44
+name = "U"
+hid  = 0x18
+
+[[key]]
+slot = 45
+name = "I"
+hid  = 0x0C
+
+[[key]]
+slot = 46
+name = "O"
+hid  = 0x12
+
+[[key]]
+slot = 47
+name = "P"
+hid  = 0x13
+
+[[key]]
+slot = 48
+name = "["
+hid  = 0x2F
+
+[[key]]
+slot = 49
+name = "]"
+hid  = 0x30
+
+[[key]]
+slot = 55
+name = "Caps"
+hid  = 0x39
+
+[[key]]
+slot = 56
+name = "A"
+hid  = 0x04
+
+[[key]]
+slot = 57
+name = "S"
+hid  = 0x16
+
+[[key]]
+slot = 58
+name = "D"
+hid  = 0x07
+
+[[key]]
+slot = 59
+name = "F"
+hid  = 0x09
+
+[[key]]
+slot = 60
+name = "G"
+hid  = 0x0A
+
+[[key]]
+slot = 61
+name = "H"
+hid  = 0x0B
+
+[[key]]
+slot = 62
+name = "J"
+hid  = 0x0D
+
+[[key]]
+slot = 63
+name = "K"
+hid  = 0x0E
+
+[[key]]
+slot = 64
+name = "L"
+hid  = 0x0F
+
+[[key]]
+slot = 65
+name = ";"
+hid  = 0x33
+
+[[key]]
+slot = 66
+name = ""
+hid  = 0x34
+
+[[key]]
+slot = 67
+name = "\\|"
+hid  = 0x31
+
+[[key]]
+slot = 73
+name = "shift"
+hid  = 0xE1
+
+[[key]]
+slot = 74
+name = "Z"
+hid  = 0x1D
+
+[[key]]
+slot = 75
+name = "X"
+hid  = 0x1B
+
+[[key]]
+slot = 76
+name = "C"
+hid  = 0x06
+
+[[key]]
+slot = 77
+name = "V"
+hid  = 0x19
+
+[[key]]
+slot = 78
+name = "B"
+hid  = 0x05
+
+[[key]]
+slot = 79
+name = "N"
+hid  = 0x11
+
+[[key]]
+slot = 80
+name = "M"
+hid  = 0x10
+
+[[key]]
+slot = 81
+name = "<"
+hid  = 0x36
+
+[[key]]
+slot = 82
+name = ">"
+hid  = 0x37
+
+[[key]]
+slot = 83
+name = "?"
+hid  = 0x38
+
+[[key]]
+slot = 84
+name = "shift"
+hid  = 0xE5
+
+[[key]]
+slot = 85
+name = "enter"
+hid  = 0x28
+
+[[key]]
+slot = 91
+name = "control"
+hid  = 0xE0
+
+[[key]]
+slot = 93
+name = "alt"
+hid  = 0xE2
+
+[[key]]
+slot = 94
+name = "space"
+hid  = 0x2C
+
+[[key]]
+slot = 95
+name = "alt"
+hid  = 0xE6
+
+[[key]]
+slot = 96
+name = "fn"
+hid  = 0xAF  # Fn/layer-hold key (type 0x05, not a real HID usage)
+
+[[key]]
+slot = 99
+name = "←"
+hid  = 0x50
+
+[[key]]
+slot = 100
+name = "↓"
+hid  = 0x51
+
+[[key]]
+slot = 101
+name = "↑"
+hid  = 0x52
+
+[[key]]
+slot = 102
+name = "→"
+hid  = 0x4F
+
+[[key]]
+slot = 103
+name = "backspace"
+hid  = 0x2A
+
+[[key]]
+slot = 117
+name = "home"
+hid  = 0x4A
+
+[[key]]
+slot = 118
+name = "page up"
+hid  = 0x4B
+
+[[key]]
+slot = 120
+name = "end"
+hid  = 0x4D
+
+[[key]]
+slot = 121
+name = "page down"
+hid  = 0x4E

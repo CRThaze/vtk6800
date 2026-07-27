@@ -1,0 +1,14 @@
+[package]
+name = "vtk6800-config"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Shared config-file storage and host integration (udev) for the Vortex VTK-6800 frontends"
+
+[dependencies]
+vtk6800-core.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+toml.workspace = true
+directories.workspace = true
