@@ -761,7 +761,7 @@ checksum = "ba73ea9cf16a25df0c8caa16c51acb937d5712a8429db78a3ee29d5dcacd3a65"
 
 [[package]]
 name = "vtk6800-cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -774,7 +774,7 @@ dependencies = [
 
 [[package]]
 name = "vtk6800-config"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "directories",
@@ -785,7 +785,7 @@ dependencies = [
 
 [[package]]
 name = "vtk6800-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "hidapi",
  "serde",
