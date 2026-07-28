@@ -1,13 +1,19 @@
-# PC68 / VTK-6800: Fn-layer default (documented factory).
+# PC68 / VTK-6800: Fn-layer default (documented factory) -- 68-key boards.
 # Transcribed from Vortex PC66/PC68 manual; media codes cross-validated
-# against the decompiled consumer table (see PROTOCOL.md §5). Slots match
-# base_layer_default.toml. Unlisted slots pass through to base.
+# against the decompiled consumer table (see PROTOCOL.md §5). Slots match the
+# base-layer default. Unlisted slots pass through to base.
+#
+# The 66-key boards use fn66_default.toml, which is IDENTICAL except Fn+Z and
+# Fn+/ swap (Menu <-> Windows); see the note near slots 74/83. A test
+# (`fn66_and_fn68_differ_only_at_the_swap_slots`) enforces that these two files
+# stay identical everywhere else.
 #
 # class: key=standard HID | consumer=media(entry type 0x03) | firmware=hardwired
 # (device/OS combos are NOT writable keymap entries; listed for completeness).
 
 [meta]
 model = "PC68 / VTK-6800 (hfd.cn HFD801)"
+variant = "68-key"
 layer = "fn"
 write_command = 0x27   # 04 27 09 : program Fn keymap (see PROTOCOL.md)
 source = "Vortex PC66/PC68 manual (documented); media codes Ghidra-validated"
@@ -251,8 +257,12 @@ code = 0x39
 # combo (PROTOCOL.md 7d) rather than a wire command.
 #
 # The three keys below are in the MAIN cluster (Z, ., /), OUTSIDE the reserved
-# zone, so per the manual's Fn-combo box they are ordinary remappable outputs:
-# Fn+Z = Menu, Fn+. = Right Win, Fn+/ = Win (68-key).
+# zone, so per the manual's Fn-combo box they are ordinary remappable outputs.
+# Two of them (Fn+Z and Fn+/) SWAP on the 66-key boards -- see fn66_default.toml:
+#   68-key (this file): Fn+Z = Menu,    Fn+/ = Windows
+#   66-key            : Fn+Z = Windows, Fn+/ = Menu   (66-key has no Win key, so
+#                       Fn+Z supplies Windows there).
+# Fn+. (Right Win) is the same on both.
 [[key]]
 slot = 74
 base = "Z"
@@ -270,6 +280,6 @@ code = 0xe7
 [[key]]
 slot = 83
 base = "?"
-fn_action = "Win"
+fn_action = "Windows"
 class = "key"
 code = 0xe3

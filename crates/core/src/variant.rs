@@ -22,12 +22,12 @@ const ANSI68_BASE: &str = include_str!("../data/ansi68_base_default.toml");
 const ISO68_BASE: &str = include_str!("../data/iso68_base_default.toml");
 const ANSI66_BASE: &str = include_str!("../data/ansi66_base_default.toml");
 const ISO66_BASE: &str = include_str!("../data/iso66_base_default.toml");
-// The Fn layer is position-identical across all four SKUs (media/F-keys/nav/
-// firmware combos sit on shared slots), so they all share one file (named for
-// the layer, not a variant). The 66-key SKUs lack the physical slot 92 (Win)
-// key, so its firmware combo simply never renders; harmless, and the shared
-// data stays a single source.
-const SHARED_FN: &str = include_str!("../data/fn_default.toml");
+// ANSI and ISO share the Fn layer; only the key count matters. The 66- and
+// 68-key files are identical except Fn+Z and Fn+/ swap (Menu <-> Windows), per
+// the manuals -- so there are two files keyed by key count, not four. A test
+// enforces they differ only at those two slots.
+const FN68: &str = include_str!("../data/fn68_default.toml");
+const FN66: &str = include_str!("../data/fn66_default.toml");
 
 #[derive(Deserialize)]
 struct BaseFile {
@@ -93,8 +93,12 @@ impl Variant {
     }
 
     fn fn_file(self) -> Result<&'static str> {
-        // All SKUs share the Fn layer.
-        Ok(SHARED_FN)
+        // ANSI/ISO share the Fn layer; only the key count differs (the 66-key
+        // swaps Fn+Z and Fn+/). See fn66_default.toml / fn68_default.toml.
+        Ok(match self {
+            Variant::Ansi68 | Variant::Iso68 => FN68,
+            Variant::Ansi66 | Variant::Iso66 => FN66,
+        })
     }
 
     /// The `(slot, name, hid)` triples of this variant's base layout, used for
@@ -153,6 +157,8 @@ fn build_default(variant: Variant) -> Result<Keymap> {
         })
         .collect();
 
+    // The variant's Fn file (fn66/fn68) already carries the right values,
+    // including the 66-key Fn+Z / Fn+/ swap, so this is a straight mapping.
     let mut fn_keys = Vec::new();
     for k in fnf.key {
         let entry = match (k.class.as_str(), k.code) {
@@ -263,6 +269,68 @@ mod tests {
                 hid: 0x65
             })
         );
+    }
+
+    #[test]
+    fn fn_layer_z_and_slash_swap_on_66_key() {
+        // Per the official manuals, Fn+Z and Fn+/ trade Menu <-> Windows between
+        // the 68- and 66-key boards (the 66-key has no physical Win key, so Fn+Z
+        // supplies Windows there).
+        let win = Entry::Key {
+            modifier: 0,
+            hid: 0xe3,
+        };
+        let menu = Entry::Key {
+            modifier: 0,
+            hid: 0x65,
+        };
+
+        let k68 = Variant::Ansi68.default_keymap().unwrap();
+        let fn68 = k68.layer(LayerId::Fn).unwrap();
+        assert_eq!(fn68.get(74), Some(menu)); // Fn+Z  = Menu    (68-key)
+        assert_eq!(fn68.get(83), Some(win)); // Fn+/  = Windows (68-key)
+
+        let k66 = Variant::Ansi66.default_keymap().unwrap();
+        let fn66 = k66.layer(LayerId::Fn).unwrap();
+        assert_eq!(fn66.get(74), Some(win)); // Fn+Z  = Windows (66-key)
+        assert_eq!(fn66.get(83), Some(menu)); // Fn+/  = Menu    (66-key)
+
+        // Everything else is shared: Fn+. (Right Win) and a media key are equal.
+        assert_eq!(fn66.get(82), fn68.get(82));
+        assert_eq!(fn66.get(57), fn68.get(57));
+    }
+
+    #[test]
+    fn fn66_and_fn68_differ_only_at_the_swap_slots() {
+        // The two Fn files are separate but must stay identical except for the
+        // documented Fn+Z (slot 74) / Fn+/ (slot 83) swap. Guards against drift.
+        use std::collections::BTreeMap;
+        let entries = |src: &str| -> BTreeMap<u8, (String, Option<u8>)> {
+            let f: FnFile = toml::from_str(src).unwrap();
+            f.key
+                .into_iter()
+                .map(|k| (k.slot, (k.class, k.code)))
+                .collect()
+        };
+        let f66 = entries(FN66);
+        let f68 = entries(FN68);
+
+        assert_eq!(
+            f66.keys().collect::<Vec<_>>(),
+            f68.keys().collect::<Vec<_>>(),
+            "the two Fn files must cover the same slots"
+        );
+        for (slot, v66) in &f66 {
+            let v68 = &f68[slot];
+            if *slot == 74 || *slot == 83 {
+                assert_ne!(v66, v68, "slot {slot} is expected to differ (the swap)");
+            } else {
+                assert_eq!(v66, v68, "slot {slot} drifted between fn66 and fn68");
+            }
+        }
+        // The swap is exactly Menu (0x65) <-> Windows (0xE3).
+        assert_eq!((f68[&74].1, f66[&74].1), (Some(0x65), Some(0xe3))); // Fn+Z
+        assert_eq!((f68[&83].1, f66[&83].1), (Some(0xe3), Some(0x65))); // Fn+/
     }
 
     #[test]

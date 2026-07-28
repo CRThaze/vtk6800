@@ -623,8 +623,8 @@ fn cmd_apply(
         format!(", {} macro(s)", km.macros.len())
     };
     println!(
-        "Applied (keymap + fn_mode = {}{macro_note}). Verify by typing; factory reset is \
-         LeftAlt+RightAlt (hold 3s).",
+        "Applied (keymap + fn_mode = {}{macro_note}). Verify by typing; to restore \
+         factory keys, run `keymap reset` then apply again.",
         km.fn_mode.as_str()
     );
     Ok(())
