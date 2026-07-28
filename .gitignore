@@ -1,6 +1,10 @@
 /target
-Cargo.lock
 **/*.rs.bk
 .DS_Store
 
 /tools/
+
+# Local packaging output (CI produces these fresh; see .github/workflows/release.yml).
+/dist/
+*.deb
+*.rpm

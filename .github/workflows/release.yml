@@ -1,0 +1,252 @@
+name: release
+
+# Build static-musl binaries for x86_64, aarch64, and armv7, ship each as a raw
+# binary + .deb + .rpm, and attach them to a GitHub Release.
+#
+# Two entry points, one run each:
+#   - Publishing a Release (in the UI or via `gh release create`) triggers a
+#     build that uploads the artifacts to that release. Here the version in
+#     Cargo.toml is the source of truth: prepare VERIFIES the tag matches it.
+#   - A manual run (workflow_dispatch) SETS Cargo.toml to the given tag's
+#     version, commits + pushes that bump, then builds and creates the release
+#     (optionally as a draft) at the bump commit.
+#
+# Note: a release published by this workflow's GITHUB_TOKEN does not re-trigger
+# the `on: release` job (GitHub blocks that to prevent recursion), so the manual
+# path stays a single run and never double-builds. Likewise the pushed bump
+# commit does not trigger anything here (there is no `on: push`).
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to build and release, e.g. v0.1.0 (created at the selected ref if it does not exist)"
+        required: true
+      draft:
+        description: "Create as a draft (assets attach first; you review and publish manually)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  # Pin the cross-linker toolchain so release builds are reproducible.
+  ZIG_VERSION: 0.14.1
+  NFPM_VERSION: 2.47.0
+
+jobs:
+  # Gate the release on the same checks as `make verify` (fmt, clippy, tests).
+  # The udev-rule drift test lives here too, so a stale packaged rule blocks a
+  # release. Runs first so we never bump/tag/build broken code.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Verify (fmt + clippy + test)
+        run: make verify
+
+  # Resolve the tag/version and the commit to build:
+  #   - release event: VERIFY the tag matches Cargo.toml (source of truth).
+  #   - workflow_dispatch: SET Cargo.toml to the tag's version, commit + push,
+  #     and build that commit so the tag contains the matching version.
+  prepare:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push the version-bump commit on the dispatch route
+    outputs:
+      tag: ${{ steps.verify.outputs.tag || steps.bump.outputs.tag }}
+      version: ${{ steps.verify.outputs.version || steps.bump.outputs.version }}
+      sha: ${{ steps.verify.outputs.sha || steps.bump.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # release event: the human bumped Cargo.toml before tagging; just confirm
+      # the tag agrees so `--version` can never disagree with the release name.
+      - id: verify
+        if: github.event_name == 'release'
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          VERSION="${TAG#v}"
+          # tomllib ships with Python 3.11+ on the runner.
+          CARGO_VERSION="$(python3 -c "import tomllib; print(tomllib.load(open('Cargo.toml','rb'))['workspace']['package']['version'])")"
+          if [ "$VERSION" != "$CARGO_VERSION" ]; then
+            echo "::error::Release tag '$TAG' implies version '$VERSION', but Cargo.toml [workspace.package] version is '$CARGO_VERSION'. Bump Cargo.toml and commit so they match (then re-release)."
+            exit 1
+          fi
+          {
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+            echo "sha=$GITHUB_SHA"
+          } >> "$GITHUB_OUTPUT"
+          echo "Verified tag $TAG against Cargo.toml ($CARGO_VERSION)."
+
+      # dispatch: rustup/cargo only needed here to sync the lockfile.
+      - uses: dtolnay/rust-toolchain@stable
+        if: github.event_name == 'workflow_dispatch'
+
+      - id: bump
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -eu
+          VERSION="${TAG#v}"
+
+          # Set the workspace version (first `version =` line) and sync the lock.
+          sed -i -E '0,/^version = "[^"]*"/s//version = "'"$VERSION"'"/' Cargo.toml
+          cargo update -w
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Cargo.toml Cargo.lock
+          if git diff --cached --quiet; then
+            echo "Cargo.toml already at $VERSION; no bump commit needed."
+            SHA="$GITHUB_SHA"
+          else
+            git commit -m "release: v$VERSION"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+            SHA="$(git rev-parse HEAD)"
+            echo "Pushed version bump to $VERSION on $GITHUB_REF_NAME ($SHA)."
+          fi
+          {
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+            echo "sha=$SHA"
+          } >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-musl
+            nfpm_arch: amd64
+            tar_arch: x86_64
+          - target: i686-unknown-linux-musl
+            nfpm_arch: 386 # deb/rpm arch: i386
+            tar_arch: i686
+          - target: aarch64-unknown-linux-musl
+            nfpm_arch: arm64
+            tar_arch: aarch64
+          - target: armv7-unknown-linux-musleabihf
+            nfpm_arch: arm7
+            tar_arch: armv7
+    steps:
+      # Build the exact commit prepare resolved: the bump commit on dispatch, or
+      # the tagged commit on the release event.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      # zig is cargo-zigbuild's cross-linker; it links the foreign-arch binary
+      # (we have no C to compile, so this is purely the linker).
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-zigbuild
+
+      - name: Install nfpm
+        run: |
+          set -eux
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSL "https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_Linux_x86_64.tar.gz" \
+            | tar -xz -C "$RUNNER_TEMP/bin" nfpm
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: Build (static musl)
+        run: cargo zigbuild --release --locked -p vtk6800-cli --target ${{ matrix.target }}
+
+      - name: Verify the binary is statically linked
+        run: |
+          set -eux
+          BIN="target/${{ matrix.target }}/release/vtk6800"
+          file "$BIN"
+          file "$BIN" | grep -q "statically linked"
+
+      - name: Smoke test
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: ./target/${{ matrix.target }}/release/vtk6800 --version
+
+      - name: Package (binary + deb + rpm)
+        env:
+          NFPM_ARCH: ${{ matrix.nfpm_arch }}
+          BIN_SRC: target/${{ matrix.target }}/release/vtk6800
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -eux
+          mkdir -p dist
+
+          # Raw, ready-to-run binary (already stripped). Arch-suffixed so all
+          # three coexist as release assets; users just chmod +x and run it.
+          cp "$BIN_SRC" "dist/vtk6800-${VERSION}-${{ matrix.tar_arch }}-linux-musl"
+
+          # nfpm expands ${VERSION}/${NFPM_ARCH} from the env but not the binary
+          # `src` path, so stage the binary to the fixed path the config names.
+          mkdir -p dist/pkg
+          cp "$BIN_SRC" dist/pkg/vtk6800
+          nfpm package -f packaging/nfpm.yaml --packager deb --target dist/
+          nfpm package -f packaging/nfpm.yaml --packager rpm --target dist/
+
+          # Keep only the release assets in dist/ (drop the nfpm staging dir).
+          rm -rf dist/pkg
+          ls -l dist/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages-${{ matrix.tar_arch }}
+          path: dist/*
+          if-no-files-found: error
+
+  release:
+    needs: [prepare, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: |
+          set -eux
+          cd dist
+          sha256sum * > SHA256SUMS
+          cat SHA256SUMS
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          # On dispatch the tag is created here, at the bump commit prepare pushed.
+          target_commitish: ${{ needs.prepare.outputs.sha }}
+          files: dist/*
+          fail_on_unmatched_files: true
+          # Only auto-fill notes when we create the release (dispatch). On the
+          # `release` event the notes you wrote in the UI are left untouched.
+          generate_release_notes: ${{ github.event_name == 'workflow_dispatch' }}
+          # Dispatch-only opt-in: hold the release as a draft (assets attach
+          # first) so you can review before publishing. Ignored on the `release`
+          # event (that release is already published).
+          draft: ${{ github.event_name == 'workflow_dispatch' && inputs.draft }}

@@ -35,6 +35,67 @@ While we expect failures to be safe, we cannot make any guarantees.
 
 **USE AT YOUR OWN RISK**
 
+## Install
+
+Every [release](https://github.com/CRThaze/vtk6800/releases) ships pre-built,
+**statically linked** binaries and packages. They depend on no system libraries
+(static musl), so the same build runs on any Linux distribution regardless of
+its libc version.
+
+Pick the file matching your CPU:
+
+| Machine | `.deb` | `.rpm` | Raw binary |
+| ------- | ------ | ------ | ---------- |
+| 64-bit x86 (most PCs) | `*_amd64.deb` | `*.x86_64.rpm` | `*-x86_64-linux-musl` |
+| 32-bit x86 | `*_i386.deb` | `*.i386.rpm` | `*-i686-linux-musl` |
+| 64-bit ARM (Raspberry Pi 4/5, ARM boards) | `*_arm64.deb` | `*.aarch64.rpm` | `*-aarch64-linux-musl` |
+| 32-bit ARM (older Pi) | `*_armhf.deb` | `*.armv7hl.rpm` | `*-armv7-linux-musl` |
+
+### Debian / Ubuntu (`.deb`)
+
+```bash
+sudo apt install ./vtk6800_<version>_amd64.deb
+```
+
+### Fedora / RHEL / openSUSE (`.rpm`)
+
+```bash
+sudo dnf install ./vtk6800-<version>-1.x86_64.rpm
+```
+
+The packages install `vtk6800` to `/usr/bin`, drop in the udev rule that grants
+your user access to the keyboard, and reload udev, so no further setup is needed.
+
+### Raw binary (any distro)
+
+```bash
+curl -LO https://github.com/CRThaze/vtk6800/releases/download/v<version>/vtk6800-<version>-x86_64-linux-musl
+chmod +x vtk6800-<version>-x86_64-linux-musl
+sudo install -m755 vtk6800-<version>-x86_64-linux-musl /usr/local/bin/vtk6800
+```
+
+The raw binary does **not** install the udev rule; grant access once with
+`sudo vtk6800 udev install` (see [Access](#access-linux)).
+
+### From source
+
+With a [Rust toolchain](https://rustup.rs):
+
+```bash
+cargo install --git https://github.com/CRThaze/vtk6800 --locked vtk6800-cli
+```
+
+Or from a clone, via the Makefile (installs to `~/.local/bin`):
+
+```bash
+git clone https://github.com/CRThaze/vtk6800
+cd vtk6800
+make install
+sudo vtk6800 udev install
+```
+
+Source installs, like the raw binary, need the udev rule installed once (above).
+
 ## Usage
 
 ```bash
