@@ -1,24 +1,27 @@
 # vtk6800
 
+![](docs/img/PC66-ANSI.png)
+
 A native Linux configuration tool for the **Vortex \*66 & \*68 (VTK-6800)**
 Family of mechanical keyboards:
 
 | Model | Layout | Tested | Notes |
 | ----- | ------ | ------ | ----- |
-| KBt RE: 66 | ANSI | ❌️  | Implemented |
-| KBt RE: 66 | ISO  | ❌️  | Unreleased (?) |
-| KBt RE: 68 | ANSI | ✅️  | Well Tested |
-| KBt RE: 68 | ISO  | ❌️  | Unreleased (?) |
-| PC66       | ANSI | ❌️  | Implemented |
-| PC66       | ISO  | ❌️  | Implemented |
-| PC68       | ANSI | ❌️  | Implemented |
-| PC68       | ISO  | ❌️  | Implemented |
+| [KBt RE: 66](docs/img/KBt-RE-66.jpg) | ANSI | ❌️ | Implemented |
+| [KBt RE: 68](docs/img/KBt-RE-68.png) | ANSI | ✅️ | Well Tested |
+| [PC66](docs/img/PC66-ANSI.png)       | ANSI | ❌️ | Implemented |
+| [PC66](docs/img/PC66-ISO.png)        | ISO  | ❌️ | Implemented |
+| [PC68](docs/img/PC68-ANSI.png)       | ANSI | ❌️ | Implemented |
+| [PC68](docs/img/PC68-ISO.png)        | ISO  | ❌️ | Implemented |
+
+> The KBt RE: 66 & 68 ISO versions are rare if they exist at all, but should
+  also be supported.
 
 This family of keybaords is *not* VIA/QMK compatible and only ships a Windows
 GUI for configuration. **This tool aims to close the gap for \*nix OS's.**
 
-    PC66/PC68 QMK version is untested.
-    Just use the [QMK Configurator](https://config.qmk.fm)
+> PC66/PC68 QMK version is untested.
+  Just use the [QMK Configurator](https://config.qmk.fm)
 
 **RGB Programming is not currently supported.**
 
