@@ -1,6 +1,6 @@
 # vtk6800
 
-![](docs/img/PC66-ANSI.png)
+![](docs/img/PC66-ANSI-Cropped.png)
 
 A native Linux configuration tool for the **Vortex \*66 & \*68 (VTK-6800)**
 Family of mechanical keyboards:
